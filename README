@@ -1,0 +1,81 @@
+1. Identifier information
+    CSE 374 HW6
+    Liam Nagle-Cocco & Ziyi Huang (group identifier: bc)
+    5/24/18
+
+2. Reponsibility Distribution
+
+    Liam:
+    Primarily in charge of freemem.c and bench.c. Collaborated with Ziyi on 
+    implementing mem.h and mem_impl.h, as well as revising all the .c files. 
+    Tested all codes. Co-wrote readme.
+    
+    Ziyi:
+    Primarily in charge of getmem.c print_heap.c mem_utils.c get_mem_stats.c and 
+    Makefile. Collaborated with Liam on implementing mem.h and mem_impl.h, as 
+    well as revising all the .c files. Tested all codes. Co-wrote readme.
+    
+    Reasoning of Distribution:
+    bench.c is a significantly larger and more complex program than the three 
+    memory checker programs, so splitting in this way makes work distribution
+    more evenly
+
+3. Freelist head algorithm
+    Freelist consists of blocks that start with a FreeNode struct followed by a
+    chunk of malloced memories. FreeNode struct has a size field, which is type 
+    uintptr_t, and a next field that pointing to another FreeNode. Freelist's 
+    head is declared in mem_impl.h and defined in getmem.c, initially NULL.
+    If head is NULL at the time of the first getmem(), then getmem() will create 
+    a large head node and then split it, taking from it the storage it needs.
+    Blocks freed by freemem() are inserted in the freelist, while blocks 
+    allocated by getmem() are removed from the freelist. Blocks requested by 
+    getmem() from the underlying system are first inserted to the freelist, then 
+    split with the necessary storage removed from the block and allocated.
+    
+    Freemem() and getmem() always insert blocks at positions which allow the
+    freelist to be in ascending addresses order.
+    
+    Freelist only has blocks with positive size and satisfies memory alignment, 
+    where all addresses start at an address compatible with the hexadecimal 
+    system (i.e a multiple of sixteen).
+    
+    No block touches or overlaps with other blocks. The block addresses are in
+    strictly ascending order. If blocks do touch, then the freemem() algorithm 
+    will merge them.
+
+4. Additional features
+
+5. Observation on bench results
+    Using standard (default) bench values, around 15,000,000 bytes (15 mega 
+    bytes) can be allocated in around 0.04 seconds, on a standard 32 byte system.
+    This time varies between 0.02 bytes and 0.04 bytes, and allocated size varies
+    between 14 MB and 16 MB. These is not a correlation between the time taken by
+    CPU and blocks allocated, and there is some variation outside of this.
+    
+    By setting large limit % (pctlarge) as 100%, using -p 100 as an argument, we 
+    get different results. Around 140 MB is allocated in around 0.4 seconds. 
+    Although this is significantly more time, it is still very quick and 
+    efficient.
+    
+    Setting large limit as percentage at 100% and also increasing large limit 
+    from 20000 to 100000 (using the argument -l 100000), we get 700 MB allocated
+    in around 0.6 seconds. It appears that increasing percentage large increases
+    CPU time more than increasing large limit does. However, in the previous two 
+    cases were large limit is left at 20000, average storage per block is much 
+    less (around 2000 bytes per block) compared with now when it is around
+    30,000 bytes per block.
+    
+    To go in the other direction, we will set large limit percentage as 0 (so 
+    100% small), and also reduce small limit to 50 bytes using "-s 50" argument. 
+    This significantly reduces CPU time to less than 0.01 seconds, and leads to
+    a number of free blocks at the end of program running at just 10 on average.
+    This shows that getmem is good at using small free blocks for small memory 
+    calls.
+    
+    The results of bench are all as expected; larger calls with more large 
+    memory calls require more CPU time and storage space. These tests show that
+    our getmem() and freemem() algorithms are efficient and effective.
+
+6. Resources
+    Lecture notes, Panaptop Recordings, malloc() & free() functions in C library
+    For seeding, the <time.h> library was studied extensively.
